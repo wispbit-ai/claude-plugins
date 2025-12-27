@@ -1,0 +1,56 @@
+{
+  "name": "wispbit",
+  "version": "1.0.0",
+  "description": "AI-powered linter",
+  "author": {
+    "name": "Wispbit",
+    "email": "support@wispbit.com"
+  },
+  "homepage": "https://wispbit.com",
+  "repository": "https://github.com/wispbit-ai/claude-plugins",
+  "license": "MIT",
+  "commands": ["./commands/"],
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "wispbit handle-hooks claude.SessionStart"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "wispbit handle-hooks claude.PostToolUse"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "wispbit handle-hooks claude.Stop"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "wispbit handle-hooks claude.SessionEnd"
+          }
+        ]
+      }
+    ]
+  }
+}

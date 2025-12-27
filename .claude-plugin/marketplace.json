@@ -1,0 +1,21 @@
+{
+  "name": "wispbit-ai",
+  "owner": {
+    "name": "Wispbit",
+    "email": "support@wispbit.com"
+  },
+  "metadata": {
+    "description": "Official Wispbit plugins for Claude Code",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "wispbit",
+      "source": "./wispbit-plugin",
+      "description": "AI-powered code quality with violation tracking and pattern memory",
+      "version": "1.0.0",
+      "category": "linters",
+      "keywords": ["linter", "code-quality", "ai", "wispbit"]
+    }
+  ]
+}
