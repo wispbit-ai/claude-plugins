@@ -17,6 +17,63 @@ The `wispbit` CLI must be installed. If a command fails with "command not found"
 npm install -g @wispbit/local
 ```
 
+## Interpreting Results & Handling Dismissed Issues
+
+**No violations:**
+Report that no violations were found and continue.
+
+**Violations found:**
+
+Group output by issues/potential issues. Format as:
+
+````
+## Wispbit Review
+
+Found X issue(s) across Y file(s)
+
+### Issue Description
+
+**File:** `path/to/file.ts` (Line X-Y)
+
+```language
+code snippet here
+```
+
+**Issue:** Description of what's wrong
+
+**Fix Available:**
+
+```diff
+- old code
++ new code
+```
+
+---
+
+Which issues would you like me to fix?
+````
+
+When violations are found:
+1. Explain each issue to the user
+2. Offer to fix the issues
+3. After fixes, run `wispbit diff` again to verify
+
+**CRITICAL — Dismissing Unfixed Issues:**
+
+Issues will **keep showing up on every review** until they are either fixed or explicitly dismissed. If the user chooses NOT to fix some issues, you **MUST** dismiss them immediately using:
+
+```bash
+wispbit dismiss <matchId1>,<matchId2>,...
+```
+
+Each issue in the review output has an `id: xxxx`. Use the comma-separated match IDs of the issues the user declined to fix. **Never skip this step** — if you don't dismiss unfixed issues, they will resurface on every subsequent review and degrade the user experience.
+
+If the user provides specific feedback about *why* they don't want to fix an issue (e.g., "we don't follow that convention" or "this is intentional"), add `--remember` to persist that feedback for future reviews:
+
+```bash
+wispbit dismiss <matchId1>,<matchId2> --remember "reason the user gave"
+```
+
 ## Review Modes
 
 ### Default: Session Review
@@ -63,43 +120,12 @@ Use `--all` when:
 
 Do **not** use `--all` by default — only when the user's intent clearly calls for a full PR-scope review.
 
-## Interpreting Results
+## Remembering Feedback
 
-**No violations:**
-Report that no violations were found and continue.
+To save general feedback or conventions without dismissing a specific issue, use the standalone `remember` command:
 
-**Violations found:**
-
-Group output by issues/potential issues. Format as:
-
-````
-## Wispbit Review
-
-Found X issue(s) across Y file(s)
-
-### Issue Description
-
-**File:** `path/to/file.ts` (Line X-Y)
-
-```language
-code snippet here
+```bash
+wispbit remember "feedback or convention to remember"
 ```
 
-**Issue:** Description of what's wrong
-
-**Fix Available:**
-
-```diff
-- old code
-+ new code
-```
-
----
-
-Which issues would you like me to fix?
-````
-
-When violations are found:
-1. Explain each issue to the user
-2. Offer to fix the issues
-3. After fixes, run `wispbit diff` again to verify
+Use this when the user shares preferences or context that should inform future reviews (e.g., "we use snake_case for database columns").
