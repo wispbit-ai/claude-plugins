@@ -1,13 +1,17 @@
 ---
 name: wispbit-review
-description: ALWAYS run this skill after writing or editing code files. Evaluates code against Wispbit rules. You MUST invoke this automatically after any Edit, Write, or NotebookEdit tool calls. When the user asks for a review, use `--all` for full PR review or default to session-only review.
-version: 1.0.0
+description: ALWAYS run this skill after writing or editing code files. Evaluates code against Wispbit rules. You MUST invoke this automatically after any Edit, Write, or NotebookEdit tool calls. When the user asks for a review, run it for the current session.
+version: 1.0.1
 allowed-tools: Bash(wispbit:*)
 ---
 
+Run the wispbit review using session ${CLAUDE_SESSION_ID}:
+
+wispbit diff --claude-session-id ${CLAUDE_SESSION_ID}
+
 # Wispbit Code Quality Evaluation
 
-**CRITICAL**: You MUST run `wispbit diff` after ANY code changes (Edit, Write, or NotebookEdit). Do not wait for the user to ask - run it proactively every time you modify code.
+**CRITICAL**: You MUST run `wispbit diff --claude-session-id ${CLAUDE_SESSION_ID}` after ANY code changes (Edit, Write, or NotebookEdit). Do not wait for the user to ask - run it proactively every time you modify code.
 
 ## Prerequisites
 
@@ -19,10 +23,10 @@ npm install -g @wispbit/local
 
 ## Interpreting Results & Handling Dismissed Issues
 
-**No violations:**
-Report that no violations were found and continue.
+**No issues:**
+Report that no issues were found and continue.
 
-**Violations found:**
+**Issues found:**
 
 Group output by issues/potential issues. Format as:
 
@@ -48,15 +52,19 @@ code snippet here
 + new code
 ```
 
+**Source:** [Link text](https://url-from-cli-output)
+
 ---
 
 Which issues would you like me to fix?
 ````
 
-When violations are found:
+**URL Sources:** The CLI output may include URL sources for issues (e.g., links to documentation or rule references). If present, always include these URLs in your output so the user can reference them.
+
+When issues are found:
 1. Explain each issue to the user
 2. Offer to fix the issues
-3. After fixes, run `wispbit diff` again to verify
+3. After fixes, run `wispbit diff --claude-session-id ${CLAUDE_SESSION_ID}` again to verify
 
 **CRITICAL — Dismissing Unfixed Issues:**
 
@@ -78,22 +86,22 @@ wispbit dismiss <matchId1>,<matchId2> --remember "reason the user gave"
 
 ### Default: Session Review
 
-By default, reviews cover only the files changed in the **current Claude session**.
+By default, reviews use `--claude-session-id` to cover the files changed in the **current Claude session**.
 
 ```bash
-wispbit diff
+wispbit diff --claude-session-id ${CLAUDE_SESSION_ID}
 ```
 
 This command:
-1. Gets the git changes from the current session (staged + unstaged + untracked)
+1. Gets the git changes from the current session
 2. Evaluates changes against Wispbit rules
-3. Reports any violations found
+3. Reports any issues found
 
 Use this mode when the user asks for a review without specifying scope, or after making code changes.
 
 ### Committed Files Review (`--committed`)
 
-To include **committed files** (not just staged/unstaged/untracked), use the `--committed` flag:
+The `--committed` flag is only available for **non-session reviews** (i.e., `wispbit diff --committed` without `--claude-session-id`). It does **not** work with `--claude-session-id` — session-based reviews always include all files changed during the session regardless.
 
 ```bash
 wispbit diff --committed
@@ -102,23 +110,7 @@ wispbit diff --committed
 Use `--committed` when:
 - The user explicitly asks to review committed files or uses `--committed`
 - The user wants to check changes that have already been committed locally
-
-By default, `wispbit diff` only reviews non-committed changes (staged + unstaged + untracked). The `--committed` flag extends the scope to also include committed changes.
-
-### Full PR Review (`--all`)
-
-When it makes sense to review **all files in the current PR/branch** (not just the current session), use the `--all` flag:
-
-```bash
-wispbit diff --all
-```
-
-Use `--all` when:
-- The user explicitly asks for a full review, a PR review, or uses `--all`
-- The user wants to check the entire branch/PR before merging
-- The user asks to "review everything" or "review all changes"
-
-Do **not** use `--all` by default — only when the user's intent clearly calls for a full PR-scope review.
+- **Do NOT combine with `--claude-session-id`**
 
 ## Remembering Feedback
 
